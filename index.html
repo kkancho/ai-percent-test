@@ -514,9 +514,10 @@
       function showResult() {
         const resultData = getResultData(totalScore);
 
-        // ✅ 내 결과가 보존되는 공유 링크 만들기: ?score=XX
+        // ✅ 내 결과가 보존되는 공유 링크 만들기: ?level=advanced&score=27
         const url = new URL(window.location.href);
-        url.searchParams.set("score", String(totalScore));
+        url.searchParams.set("level", resultData.key); // beginner / user / advanced / expert
+        url.searchParams.set("score", String(totalScore)); // 점수도 같이 저장(선택)
         window.history.replaceState({}, "", url.toString());
 
         // 화면 전환
@@ -598,11 +599,25 @@
         );
       }
 
-      // ✅ 공유 링크로 들어온 사람은 바로 결과 보여주기
       (function boot() {
         const params = new URLSearchParams(window.location.search);
+        const level = params.get("level"); // beginner / user / advanced / expert
         const scoreParam = params.get("score");
 
+        // ✅ 1) level이 있으면 무조건 결과로 보냄 (가장 안전)
+        if (level) {
+          // level에 맞는 "가짜 점수"를 넣어서 결과 화면을 강제로 띄움
+          // (점수 기반 분기 로직을 그대로 쓰기 위한 트릭)
+          if (level === "beginner") totalScore = 15;
+          else if (level === "user") totalScore = 22;
+          else if (level === "advanced") totalScore = 29;
+          else if (level === "expert") totalScore = 35;
+
+          showResult();
+          return;
+        }
+
+        // ✅ 2) level이 없으면 score로 시도 (예전 링크 호환)
         if (scoreParam) {
           const s = Number(scoreParam);
           if (!Number.isNaN(s) && s >= 12 && s <= 36) {
@@ -611,6 +626,7 @@
             return;
           }
         }
+
         showScreen("start-screen");
       })();
     </script>
