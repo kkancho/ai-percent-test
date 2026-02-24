@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>당신의 AI 사용 능력은 상위 몇 %?</title>
+
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 60px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        transition: 0.3s;
+      }
+
+      h1 {
+        font-size: 26px;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+
+      button {
+        padding: 15px;
+        font-size: 16px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      button:hover {
+        transform: scale(1.03);
+      }
+
+      .option-btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        background: #4caf50;
+        color: white;
+      }
+
+      .option-btn:hover {
+        background: #43a047;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      #progress-bar {
+        background: linear-gradient(90deg, #4caf50, #00c6ff);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 시작 화면 -->
+    <div class="container" id="start-screen">
+      <h1>당신의 AI 사용 능력은 상위 몇 %?</h1>
+      <p>단 1분이면 확인 가능합니다.</p>
+      <p>12문항으로 보는 AI 활용 레벨 테스트</p>
+      <br />
+      <button onclick="startTest()">테스트 시작하기 🚀</button>
+    </div>
+
+    <!-- 질문 화면 -->
+    <div class="container hidden" id="question-screen">
+      <p
+        id="progress-text"
+        style="text-align: left; margin: 0 0 10px 0; font-weight: bold"
+      ></p>
+      <div
+        style="
+          width: 100%;
+          height: 10px;
+          background: #e9edf3;
+          border-radius: 999px;
+          overflow: hidden;
+          margin-bottom: 15px;
+        "
+      >
+        <div
+          id="progress-bar"
+          style="height: 100%; width: 0%; background: #4caf50"
+        ></div>
+      </div>
+      <h2 id="question-text"></h2>
+      <button class="option-btn" id="btnA">A</button>
+      <button class="option-btn" id="btnB">B</button>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="container hidden" id="result-screen">
+      <h2 id="result-title"></h2>
+      <p id="result-percent" style="font-weight: bold; font-size: 18px"></p>
+      <p id="result-one-liner" style="margin-top: 10px"></p>
+      <hr style="margin: 20px 0" />
+      <p id="result-desc" style="text-align: left; line-height: 1.6"></p>
+
+      <h3 style="text-align: left; margin-top: 20px">🚀 성장 조언</h3>
+      <ul id="result-advice" style="text-align: left; line-height: 1.6"></ul>
+
+      <button style="margin-top: 25px" onclick="restartTest()">
+        다시 해보기 🔁
+      </button>
+      <button
+        style="margin-top: 10px; background: #2196f3; color: white"
+        onclick="copyLink()"
+      >
+        결과 링크 복사 📋
+      </button>
+    </div>
+
+    <script>
+      let currentQuestion = 0;
+      let totalScore = 0;
+
+      const questions = [
+        {
+          question: "ChatGPT 사용 빈도는 어느 정도인가요?",
+          options: [
+            {
+              text: "가끔 궁금한 것이 있을 때만 사용하거나 거의 사용하지 않는다.",
+              score: 1,
+            },
+            {
+              text: "거의 매일 업무, 학습, 일상생활에 적극적으로 활용한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "AI에게 질문할 때 주로 어떤 방식을 사용하나요?",
+          options: [
+            { text: "“이게 뭐야?” 같은 간단한 질문을 던진다.", score: 1 },
+            {
+              text: "상황 설명, 원하는 결과, 출력 형식을 구체적으로 명시한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "AI의 답변이 만족스럽지 않을 때 어떻게 대응하나요?",
+          options: [
+            {
+              text: "“역시 AI는 한계가 있어” 하며 포기하거나 다른 방법을 찾는다.",
+              score: 1,
+            },
+            {
+              text: "프롬프트를 수정하거나 추가 조건을 제시하여 재질문한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "AI 이미지 생성 도구(Midjourney, DALL-E 등) 사용 경험은?",
+          options: [
+            { text: "사용해본 적이 없거나 1-2번 체험해본 정도다.", score: 1 },
+            {
+              text: "정기적으로 사용하며 원하는 스타일의 이미지를 만들 수 있다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "이미지 생성 시 프롬프트를 어떻게 작성하나요?",
+          options: [
+            { text: "“고양이 그림” 같은 기본 키워드만 입력한다.", score: 1 },
+            {
+              text: "화풍, 조명, 구도, 색감 등 세부 요소를 상세히 지정한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "AI가 제공한 정보를 어떻게 활용하나요?",
+          options: [
+            { text: "AI가 똑똑하니까 대부분 그대로 믿고 사용한다.", score: 1 },
+            {
+              text: "환각 현상을 인지하고 반드시 사실 확인과 교차 검증을 한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "업무나 학습에서 AI를 어떻게 활용하고 있나요?",
+          options: [
+            { text: "가끔 검색 대신 간단한 질문을 하는 정도다.", score: 1 },
+            {
+              text: "문서 작성, 아이디어 발굴, 코딩, 분석 등 워크플로우에 통합했다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "반복적인 작업이 있을 때 AI를 어떻게 활용하나요?",
+          options: [
+            {
+              text: "여전히 손으로 직접 하거나 기존 방식을 고수한다.",
+              score: 1,
+            },
+            {
+              text: "AI에게 템플릿이나 자동화 스크립트 생성을 요청한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "프롬프트 최적화에 대한 경험은?",
+          options: [
+            { text: "한 번 써본 프롬프트를 계속 비슷하게 사용한다.", score: 1 },
+            {
+              text: "단어와 구조를 바꿔가며 최적의 결과를 찾는 실험을 한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "ChatGPT 외 다른 AI 도구 활용 경험은?",
+          options: [
+            {
+              text: "ChatGPT 정도만 사용하고 다른 도구는 잘 모른다.",
+              score: 1,
+            },
+            {
+              text: "노션 AI, 코파일럿, 클로드 등 다양한 AI 도구를 활용한다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "AI 활용을 위한 체계적인 루틴이 있나요?",
+          options: [
+            { text: "그때그때 생각날 때만 사용한다.", score: 1 },
+            {
+              text: "특정 업무나 프로젝트에서 AI 활용 단계를 체계화했다.",
+              score: 3,
+            },
+          ],
+        },
+        {
+          question: "AI 결과물을 어떻게 활용하나요?",
+          options: [
+            {
+              text: "AI가 만든 결과를 거의 수정 없이 그대로 사용한다.",
+              score: 1,
+            },
+            {
+              text: "AI 결과를 초안으로 활용하고 내가 편집·보완하여 완성한다.",
+              score: 3,
+            },
+          ],
+        },
+      ];
+
+      // ✅ 화면 전환을 한 곳에서 관리 (핵심)
+      function showScreen(screenId) {
+        const screens = ["start-screen", "question-screen", "result-screen"];
+        screens.forEach((id) =>
+          document.getElementById(id).classList.add("hidden"),
+        );
+        document.getElementById(screenId).classList.remove("hidden");
+        window.scrollTo(0, 0);
+      }
+
+      // ✅ 버튼 이벤트 연결 (inline onclick 꼬임 방지)
+      const btnA = document.getElementById("btnA");
+      const btnB = document.getElementById("btnB");
+
+      btnA.addEventListener("click", () =>
+        selectAnswer(questions[currentQuestion].options[0].score),
+      );
+      btnB.addEventListener("click", () =>
+        selectAnswer(questions[currentQuestion].options[1].score),
+      );
+
+      function startTest() {
+        showScreen("question-screen");
+        showQuestion();
+      }
+
+      function showQuestion() {
+        document.getElementById("question-text").innerText =
+          currentQuestion + 1 + ". " + questions[currentQuestion].question;
+
+        btnA.innerText = "A. " + questions[currentQuestion].options[0].text;
+        btnB.innerText = "B. " + questions[currentQuestion].options[1].text;
+
+        const total = questions.length;
+        document.getElementById("progress-text").innerText =
+          `진행: ${currentQuestion + 1} / ${total}`;
+        document.getElementById("progress-bar").style.width =
+          `${((currentQuestion + 1) / total) * 100}%`;
+      }
+
+      function selectAnswer(score) {
+        totalScore += score;
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+          showQuestion();
+        } else {
+          showResult();
+        }
+      }
+
+      function showResult() {
+        showScreen("result-screen");
+
+        let resultData = null;
+
+        if (totalScore <= 18) {
+          resultData = {
+            title: "🌱 AI 입문자 - AI 세계의 호기심 많은 탐험가",
+            percent: "상위 80% (지금부터가 시작!)",
+            oneLiner: "AI를 ‘검색’처럼 쓰는 단계!",
+            desc: "AI 도구의 존재는 알고 있지만 아직 본격적으로 활용하지 못하는 단계입니다. ChatGPT를 가끔 사용해보지만 어떻게 효과적으로 활용해야 할지 막막함을 느끼는 경우가 많습니다.",
+            advice: [
+              "하루에 한 번씩 ChatGPT에 일상 질문을 해보세요.",
+              "프롬프트에 '상황 + 목적 + 형식'을 넣는 연습을 해보세요.",
+              "이미지 생성 AI도 가볍게 시작해보세요.",
+            ],
+          };
+        } else if (totalScore <= 25) {
+          resultData = {
+            title: "🚀 AI 활용자 - 실용적인 AI 파트너십 사용자",
+            percent: "상위 50% (이미 잘 쓰고 있어요!)",
+            oneLiner: "AI를 ‘조수’로 쓰는 단계!",
+            desc: "AI를 일상적으로 사용하며 기본 활용법을 잘 아는 단계입니다. 다만 고급 기법이나 워크플로우 통합까지는 아직 여지가 있습니다.",
+            advice: [
+              "역할 부여 프롬프트(예: '너는 마케터야')를 써보세요.",
+              "같은 작업을 3번 반복한다면 템플릿화/자동화를 고민해보세요.",
+              "AI 도구들을 연결한 워크플로우를 만들어보세요.",
+            ],
+          };
+        } else if (totalScore <= 32) {
+          resultData = {
+            title: "⚡ AI 고급자 - AI와 시너지를 만드는 전략가",
+            percent: "상위 20% (상당히 고수!)",
+            oneLiner: "AI를 ‘업무 시스템’에 넣은 단계!",
+            desc: "프롬프트 최적화, 이미지 생성, 검증 등 활용이 매우 능숙합니다. 업무 프로세스에 AI를 통합하고 자동화까지 고려하는 단계입니다.",
+            advice: [
+              "AI 자동화(템플릿/스크립트) 범위를 더 넓혀보세요.",
+              "프롬프트 템플릿을 만들어 공유해보세요.",
+              "텍스트+이미지를 섞는 멀티모달 활용을 해보세요.",
+            ],
+          };
+        } else {
+          resultData = {
+            title: "🏆 AI 전문가 - AI 시대를 선도하는 혁신가",
+            percent: "상위 5% (거의 끝판왕!)",
+            oneLiner: "AI를 ‘돈/성과’로 연결하는 단계!",
+            desc: "AI 도구를 완전히 마스터한 수준입니다. 최적 도구 선택, 자동화/통합 워크플로우 구축이 가능한 단계입니다.",
+            advice: [
+              "노하우를 블로그/강의/컨설팅으로 확장해보세요.",
+              "새 모델/기법을 빠르게 테스트하고 적용해보세요.",
+              "책임 있는 AI 사용 원칙을 정리해보세요.",
+            ],
+          };
+        }
+
+        document.getElementById("result-title").innerText = resultData.title;
+        document.getElementById("result-percent").innerText =
+          resultData.percent;
+        document.getElementById("result-one-liner").innerText =
+          resultData.oneLiner;
+        document.getElementById("result-desc").innerText = resultData.desc;
+
+        const adviceList = document.getElementById("result-advice");
+        adviceList.innerHTML = "";
+        resultData.advice.forEach((item) => {
+          const li = document.createElement("li");
+          li.innerText = item;
+          adviceList.appendChild(li);
+        });
+      }
+
+      function restartTest() {
+        currentQuestion = 0;
+        totalScore = 0;
+        showScreen("start-screen");
+      }
+      function copyLink() {
+        navigator.clipboard
+          .writeText(window.location.href)
+          .then(() => {
+            alert("링크가 복사되었습니다! 친구에게 공유해보세요 🚀");
+          })
+          .catch(() => {
+            alert("복사에 실패했습니다. 직접 주소를 복사해주세요.");
+          });
+      }
+    </script>
+  </body>
+</html>
