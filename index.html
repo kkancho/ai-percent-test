@@ -3,14 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- ✅ 기본 설명 -->
     <meta
       name="description"
       content="12문항으로 보는 AI 활용 레벨 테스트. 나는 상위 몇 %일까?"
     />
 
-    <!-- ✅ OG (카톡 썸네일용) - 중복 제거 완료 -->
     <meta property="og:title" content="당신의 AI 사용 능력은 상위 몇 %?" />
     <meta
       property="og:description"
@@ -74,6 +71,12 @@
         background: #f1f4f9;
         width: 100%;
       }
+      .coupang {
+        background: #ff5722;
+        color: white;
+        width: 100%;
+        font-weight: bold;
+      }
 
       #progress-bar {
         height: 10px;
@@ -84,33 +87,36 @@
   </head>
 
   <body>
-    <!-- 시작 화면 -->
     <div class="container" id="start-screen">
       <h1>당신의 AI 사용 능력은 상위 몇 %?</h1>
       <p>12문항으로 보는 AI 활용 레벨 테스트</p>
       <button class="primary" onclick="startTest()">테스트 시작하기 🚀</button>
     </div>
 
-    <!-- 질문 화면 -->
     <div class="container hidden" id="question-screen">
-      <p id="progress-text"></p>
-      <div style="background: #eee; border-radius: 999px; overflow: hidden">
-        <div id="progress-bar" style="width: 0%"></div>
-      </div>
       <h2 id="question-text"></h2>
       <button class="primary" id="btnA"></button>
       <button class="primary" id="btnB"></button>
     </div>
 
-    <!-- 결과 화면 -->
     <div class="container hidden" id="result-screen">
       <h2 id="result-title"></h2>
       <p id="result-percent"></p>
-      <p id="result-one-liner"></p>
 
       <button class="secondary" onclick="copyLink()">결과 링크 복사 📋</button>
       <button id="kakao-share" class="secondary">카카오톡 공유 💛</button>
+
+      <!-- 💰 수익 버튼 추가 -->
+      <a href="https://link.coupang.com/a/dS44cW" target="_blank">
+        <button class="coupang">🔥 AI 실력 올리는 추천 도서 보러가기</button>
+      </a>
+
       <button class="ghost" onclick="restartTest()">다시 해보기 🔁</button>
+
+      <p style="font-size: 12px; margin-top: 15px">
+        이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를
+        제공받습니다.
+      </p>
     </div>
 
     <script>
@@ -180,10 +186,6 @@
         let resultText = "";
         if (totalScore <= 3) resultText = "AI 입문자 🌱";
         else resultText = "AI 활용자 🚀";
-
-        const url = new URL(window.location.href);
-        url.searchParams.set("score", totalScore);
-        window.history.replaceState({}, "", url.toString());
 
         document.getElementById("result-title").innerText = resultText;
         showScreen("result-screen");
