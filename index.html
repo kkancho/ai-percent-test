@@ -223,6 +223,7 @@
           <button class="secondary" onclick="copyLink()">
             결과 링크 복사 📋
           </button>
+          <button id="kakao-share">카카오톡으로 공유하기 💛</button>
         </div>
       </div>
 
@@ -629,6 +630,25 @@
 
         showScreen("start-screen");
       })();
+      // 카카오톡 공유 (모바일에서 자동 공유창 열림)
+      document
+        .getElementById("kakao-share")
+        .addEventListener("click", function () {
+          const shareUrl = window.location.href;
+
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "당신의 AI 사용 능력은 상위 몇 %?",
+                text: "내 AI 활용 레벨 결과 확인해보기 👇",
+                url: shareUrl,
+              })
+              .then(() => console.log("공유 성공"))
+              .catch((error) => console.log("공유 실패", error));
+          } else {
+            alert("이 기기에서는 공유 기능이 지원되지 않습니다.");
+          }
+        });
     </script>
   </body>
 </html>
